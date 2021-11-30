@@ -3,6 +3,7 @@ const Review = require("../models/review");
 const Product = require("../models/product");
 const verifyToken = require("../middlewares/verify-token");
 const upload = require("../middlewares/upload-photo");
+
 router.post(
   "/reviews/:productID",
   [verifyToken, upload.single("photo")],
@@ -16,7 +17,10 @@ router.post(
       review.user = req.decoded._id;
       review.productID = req.params.productID;
 
-      await Product.update({ $push: review._id });
+      await Product.findOneAndUpdate(
+        { _id: review.productID },
+        { $push: { reviews: review._id } }
+      );
 
       const savedReview = await review.save();
       if (savedReview) {
